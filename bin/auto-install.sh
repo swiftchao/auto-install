@@ -10,18 +10,18 @@ set -e
 function get_soft_home() {
   if [ -z "${SOFT_HOME}" ]; then
     CURRENT_DIR=`pwd`
-		SOFT_HOME="${CURRENT_DIR}/.."
+    SOFT_HOME="${CURRENT_DIR}/.."
   fi
-	echo "${SOFT_HOME}"
+  echo "${SOFT_HOME}"
 }
 
 function load_args_file() {
   if [ -f "${1}" ]; then
-		rpm -qa | grep dos2unix > /dev/null
-		DOS2UNIX_IS_INSTALL=$?
-		if [ "${DOS2UNIX_IS_INSTALL}" ]; then
-		  dos2unix "${1}" > /dev/null 2>&1
-	  fi
+    rpm -qa | grep dos2unix > /dev/null
+    DOS2UNIX_IS_INSTALL=$?
+    if [ "${DOS2UNIX_IS_INSTALL}" ]; then
+      dos2unix "${1}" > /dev/null 2>&1
+    fi
     source "${1}"
   fi
 }
