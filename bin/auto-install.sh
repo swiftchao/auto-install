@@ -17,6 +17,11 @@ function get_soft_home() {
 
 function load_args_file() {
   if [ -f "${1}" ]; then
+		rpm -qa | grep dos2unix > /dev/null
+		DOS2UNIX_IS_INSTALL=$?
+		if [ "${DOS2UNIX_IS_INSTALL}" ]; then
+		  dos2unix "${1}" > /dev/null 2>&1
+	  fi
     source "${1}"
   fi
 }
@@ -26,13 +31,15 @@ SOFT_HOME=`get_soft_home`
 load_args_file "${SOFT_HOME}/conf/config.conf"
 load_args_file "${SOFT_HOME}/bin/functions.sh"
 
+check_args $*
 init_log
+action
 
 START_TIME=$(date +%s)
-echo "`generate_timestamp` Begin..." >> "${LOGS_DIR}/${LOG_INFO_NAME}"
+echo "`get_current_time` Begin..." >> "${LOG_INFO_FILE}"
 
 END_TIME=$(date +%s)
-TOOK_TIME=$((START_TIME - END_TIME))
+TOOK_TIME=$((END_TIME-START_TIME))
 
-echo "`generate_timestamp` Total took:[$TOOK_TIME] seconds." >> "${LOGS_DIR}/${LOG_INFO_NAME}"
-echo "`generate_timestamp` End" >> "${LOGS_DIR}/${LOG_INFO_NAME}"
+echo "`get_current_time` Total taken:[$TOOK_TIME] seconds." >> "${LOG_INFO_FILE}"
+echo "`get_current_time` End" >> "${LOG_INFO_FILE}"
