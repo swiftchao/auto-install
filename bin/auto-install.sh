@@ -40,13 +40,15 @@ load_args_file "${SOFT_HOME}/bin/functions.sh"
 
 check_args $*
 init_log
-action
 
 START_TIME=$(date +%s)
-echo "`get_current_time` Begin..." >> "${LOG_INFO_FILE}"
+echo "`get_current_time` Begin auto install..." >> "${LOG_INFO_FILE}"
+
+action
 
 END_TIME=$(date +%s)
-TOOK_TIME=$((END_TIME-START_TIME))
+TAKEN_TIME=$((END_TIME-START_TIME))
 
-echo "`get_current_time` Total taken:[$TOOK_TIME] seconds." >> "${LOG_INFO_FILE}"
+echo "`get_current_time` Total taken:[$TAKEN_TIME] seconds."
+echo "`get_current_time` Total taken:[$TAKEN_TIME] seconds." >> "${LOG_INFO_FILE}"
 echo "`get_current_time` End" >> "${LOG_INFO_FILE}"
