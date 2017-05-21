@@ -6,27 +6,34 @@
 #########################################################################
 #!/bin/bash
 set -e
+
+function convert_relative_path_to_absolute_path() {
+  this="${0}"
+  bin=`dirname "${this}"`
+  script=`basename "${this}"`
+  bin=`cd "${bin}"; pwd`
+  this="${bin}/${script}"
+}
   
 function get_soft_home() {
   if [ -z "${SOFT_HOME}" ]; then
-    CURRENT_DIR=`pwd`
-    SOFT_HOME="${CURRENT_DIR}/.."
+    export SOFT_HOME=`dirname "${bin}"`
   fi
-  echo "${SOFT_HOME}"
 }
 
 function load_args_file() {
   if [ -f "${1}" ]; then
     rpm -qa | grep dos2unix > /dev/null
     DOS2UNIX_IS_INSTALL=$?
-    if [ "${DOS2UNIX_IS_INSTALL}" ]; then
+    if [ "${DOS2UNIX_IS_INSTALL}" -eq 0 ]; then
       dos2unix "${1}" > /dev/null 2>&1
     fi
     source "${1}"
   fi
 }
 
-SOFT_HOME=`get_soft_home`
+convert_relative_path_to_absolute_path
+get_soft_home
 
 load_args_file "${SOFT_HOME}/conf/config.conf"
 load_args_file "${SOFT_HOME}/bin/functions.sh"
