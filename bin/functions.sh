@@ -120,6 +120,21 @@ function create_args_ln_file() {
   fi
 }
 
+function safe_remove() {
+  if [ -n "${1}" ]; then
+    if [ -d "${1}" ] || [ -f "${1}" ] && [ "${1}" != "/" ]; then
+      rm -rf "${1}"
+    fi
+  fi
+}
+
+function backup() {
+  if [ -n "${1}" ] && [ -d "${1}" ] || [ -f "${1}" ]; then
+    safe_remove "${1}".back
+    cp -r "${1}" "${1}".back
+  fi
+}
+
 #############################################LOG FUNCTIONS##################################
 function generate_default_log_name() {
   if [ -z "${SOFT_NAME}" ]; then
@@ -302,7 +317,7 @@ function is_user_added() {
         fi  
       done
     fi  
-		IFS="${OLD_IFS}"
+    IFS="${OLD_IFS}"
   fi
 }
 
@@ -335,80 +350,178 @@ function add_user() {
 #############################################DISK FUNCTIONS##################################
 function get_source_disks() {
   SOURCE_DISKS=`fdisk -l | grep "Disk /" | grep "bytes" | awk '{print$2}' \
-	  | sed 's|:$||g' | xargs | sed 's| |,|g'`
+    | sed 's|:$||g' | xargs | sed 's| |,|g'`
 }
 
 function get_mounted_disks() {
   MOUNTED_DISKS=`df -h | awk '{print$1}' \
-	  | grep -v "\([0-9]\)\{1,3\}.\([0-9]\)\{1,3\}.\([0-9]\)\{1,3\}.\([0-9]\)\{1,3\}" \
-		| grep -v "^Filesystem$" | grep -v "^tmpfs$" | grep -v "^udev$" \
-		| xargs | sed 's| |,|g'`
+    | grep -v "\([0-9]\)\{1,3\}.\([0-9]\)\{1,3\}.\([0-9]\)\{1,3\}.\([0-9]\)\{1,3\}" \
+    | grep -v "^Filesystem$" | grep -v "^tmpfs$" | grep -v "^udev$" \
+    | xargs | sed 's| |,|g'`
 }
 
 function get_lvm_swap_disks() {
   LVM_AND_SWAP_DISKS=`blkid | grep -E "TYPE=\"swap\"|TYPE=\"LVM2_member\"" \
-	  | awk '{print$1}' | sed 's|:||g' | xargs | sed 's| |,|g'`
+    | awk '{print$1}' | sed 's|:||g' | xargs | sed 's| |,|g'`
+}
+
+function get_default_disk_value() {
+  if [ -z "${MOUNT_DISK_PREFIX}" ]; then
+    MOUNT_DISK_PREFIX="/mnt/disk"
+  fi
+  if [ -z "${FORMAT_UNMOUNT_DISK}" ]; then
+    FORMAT_UNMOUNT_DISK="false"
+  fi
+  if [ -z "${DISK_FILE_TYPE}" ]; then
+    DISK_FILE_TYPE="ext3"
+  fi
+}
+
+function init_fstab_file() {
+  FSTAB_FILE="/etc/fstab"
+}
+
+function get_setted_disks_in_fstab() {
+  init_fstab_file
+  SETTED_DISKS_IN_FSTAB=`cat "${FSTAB_FILE}" | awk '{print$1}' | grep "^/" | xargs | sed 's| |,|g'`
 }
 
 function init_disks() {
   get_source_disks
-	get_mounted_disks
-	get_lvm_swap_disks  
+  get_mounted_disks
+  get_lvm_swap_disks  
+  get_max_disk_number
+  get_default_disk_value
+  get_setted_disks_in_fstab
 }
 
 function remove_tail_number() {
   if [ -n "${1}" ]; then
-		echo "${1}" | sed 's|\([0-9]\+\)$||g' 
+    echo "${1}" | sed 's|\([0-9]\+\)$||g' 
+  fi
+}
+
+function is_args_disk_in_args_disks() {
+  IS_ARGS_DISK_IN_ARGS_DISKS="false"
+  if [ -n "${2}" ]; then
+    for TMP_DISK in ${2}; do
+      if [ -b "${TMP_DISK}" ]; then
+        if [ "${1}" == "${TMP_DISK}" ]; then
+          IS_ARGS_DISK_IN_ARGS_DISKS="true"
+          break
+        else 
+          TMP_DISK_NO_TAIL_NUMBER=`remove_tail_number "${1}"`
+          if [ "${1}" == "${TMP_DISK_NO_TAIL_NUMBER}" ]; then
+            IS_ARGS_DISK_IN_ARGS_DISKS="true"
+            break;
+          fi
+        fi
+      fi
+    done
+  fi
+  echo "${IS_ARGS_DISK_IN_ARGS_DISKS}"
+}
+
+function is_mounted_disk() {
+  is_args_disk_in_args_disks "${1}" "${MOUNTED_DISKS}"
+}
+
+function is_lvm_or_swap_disk() {
+  is_args_disk_in_args_disks "${1}" "${LVM_AND_SWAP_DISKS}"
+}
+
+function is_setted_disk() {
+  is_args_disk_in_args_disks "${1}" "${SETTED_DISKS_IN_FSTAB}"
+}
+
+function is_not_system_disk() {
+  if [ -n "${1}" ]; then
+    echo "${1}" | grep "^/dev/" | grep -v "swap$" | grep -v "da$" > /dev/null 2>&1
+    echo "$?"
+  fi
+}
+
+function get_max_disk_number() {
+  MAX_DISK_NUMBER=0
+  LAST_DISK_NUMBER=`df -h | awk '{print$6}' | grep "${MOUNT_DISK_PREFIX}" \
+    | sed 's|/||g' | sed 's|\([a-z]\+\)||g' | sed 's|\([A-Z]\+\)||g' \
+    | grep "\([0-9]\+\)" | sort -r | xargs | awk '{print$1}'`
+  if [ -n "${LAST_DISK_NUMBER}" ]; then
+    MAX_DISK_NUMBER=${LAST_DISK_NUMBER}
+  fi
+}
+
+function delete_old_args_disk_in_fstab() {
+  if [ -n "${1}" ]; then
+    init_fstab_file
+    cat "${FSTAB_FILE}" | grep -v "${1}" >tmpdisk && cat tmpdisk > "${FSTAB_FILE}"
+  fi
+}
+
+function set_args_disk_in_fstab() {
+  if [ -n "${1}" ] && [ -n "${2}" ] && [ -n "${3}" ]; then
+    init_fstab_file
+    backup "${FSTAB_FILE}" "${FSTAB_FILE}.back"
+    delete_old_args_disk_in_fstab
+    echo "${1}                    ${2}                   ${3}    defaults        0 0" >> ${FSTAB_FILE}
   fi
 }
 
 function mount_disks() {
   if [ "${SOFT_DISK}" == "true" ]; then
-		init_disks
-		if [ -n "${SOURCE_DISKS}" ]; then
+    init_disks
+    if [ -n "${SOURCE_DISKS}" ]; then
       OLD_IFS="${IFS}"
-			IFS=",${now},"
-			for SOURCE_DISK in ${SOURCE_DISKS}; do
-				IS_SOURCE_DISK_MOUNTED="false"
-				IS_LVM_OR_SWAP_DISK="false"
-				if [ -b "${SOURCE_DISK}" ]; then
-					if [ -n "${MOUNTED_DISKS}" ]; then
-					  for MOUNTED_DISK in ${MOUNTED_DISKS}; do
-							if [ -b "${MOUNTED_DISK}" ]; then
-								if [ "${SOURCE_DISK}" == "${MOUNTED_DISK}" ]; then
-				          IS_SOURCE_DISK_MOUNTED="true"
-								else 
-				          MOUNTED_DISK_NO_TAIL_NUMBER=`remove_tail_number "${MOUNTED_DISK}"`
-									if [ "${SOURCE_DISK}" == "${MOUNTED_DISK_NO_TAIL_NUMBER}" ]; then
-				            IS_SOURCE_DISK_MOUNTED="true"
-									fi
-								fi
-							fi
-					  done
-						for LVM_OR_SWAP_DISK in ${LVM_AND_SWAP_DISKS}; do
-							if [ -b "${LVM_OR_SWAP_DISK}" ]; then
-								if [ "${SOURCE_DISK}" == "${LVM_OR_SWAP_DISK}" ]; then
-									IS_SOURCE_DISK_LVM_OR_SWAP="true"
-								else
-				          LVM_OR_SWAP_DISK_NO_TAIL_NUMBER=`remove_tail_number "${LVM_OR_SWAP_DISK}"`
-									if [ "${SOURCE_DISK}" == "${LVM_OR_SWAP_DISK_NO_TAIL_NUMBER}" ]; then
-									  IS_SOURCE_DISK_LVM_OR_SWAP="true"
-									fi
-								fi
-							fi
-						done
-				  fi
-				fi
-				if [ "${IS_SOURCE_DISK_MOUNTED}" == "true" ]; then
-					echo -e "`get_current_time` Disk:[\033[32m${SOURCE_DISK}\033[0m] has already mounted -- \033[32mOK\033[0m"
-				else
-					if [ "${IS_SOURCE_DISK_LVM_OR_SWAP}" == "false" ]; then
-					  echo -e "`get_current_time` Disk:[\033[31m${SOURCE_DISK}\033[0m] has not mount -- \033[32mOK\033[0m"
-				  fi
-				fi
-			done
-			IFS="${OLD_IFS}"
-		fi
+      IFS=",${now},"
+      for SOURCE_DISK in ${SOURCE_DISKS}; do
+        IS_MOUNTED_DISK="false"
+        IS_LVM_OR_SWAP_DISK="false"
+        TO_SET_DISK_IN_FSTAB="false"
+        if [ -b "${SOURCE_DISK}" ]; then
+          IS_MOUNTED_DISK=`is_mounted_disk "${SOURCE_DISK}"`  
+          IS_LVM_OR_SWAP_DISK=`is_lvm_or_swap_disk "${SOURCE_DISK}"`
+          IS_NOT_SYSTEM_DISK=`is_not_system_disk "${SOURCE_DISK}"`
+          IS_SETTED_DISK=`is_setted_disk "${SOURCE_DISK}"`
+          if [ "${IS_MOUNTED_DISK}" ]; then
+            echo -e "`get_current_time` Disk:[\033[32m${SOURCE_DISK}\033[0m] has already mounted -- \033[32mOK\033[0m"
+          else
+            if [ "${IS_LVM_OR_SWAP_DISK}" == "false" ] && [ "${IS_NOT_SYSTEM_DISK}" -eq 0 ]; then
+              DISK_NUMBER=$((DISK_NUMBER+1))
+              create_dir "${MOUNT_DISK_PREFIX}/${DISK_NUMBER}"
+              mount "${SOURCE_DISK}" "${MOUNT_DISK_PREFIX}/${DISK_NUMBER}" > /dev/null 2>&1
+              MOUNT_RESULT=$?
+              if [ "${MOUNT_RESULT}" -eq 0 ]; then
+                TO_SET_DISK_IN_FSTAB="true"
+                echo -e "`get_current_time` Mount disk:[\033[32m${SOURCE_DISK}\033[0m] -- \033[32mOK\033[0m"
+              else
+                if [ "${FORMAT_UNMOUNT_DISK}" == "true" ]; then
+                  echo y | mkfs -t "${DISK_FILE_TYPE}" -L "${MOUNT_DISK_PREFIX}/${DISK_NUMBER}" "${SOURCE_DISK}"
+                  FORMAT_DISK_RESULT=$?
+                  if [ "${FORMAT_DISK_RESULT}" -eq 0 ]; then
+                    echo -e "`get_current_time` Format disk:[\033[32m${SOURCE_DISK}\033[0m] -- \033[32mOK\033[0m"
+                    mount "${SOURCE_DISK}" "${MOUNT_DISK_PREFIX}/${DISK_NUMBER}" > /dev/null 2>&1
+                    REMOUNT_DISK_RESULT=$?
+                    if [ "${REMOUNT_RESULT}" -eq 0 ]; then
+                      TO_SET_DISK_IN_FSTAB="true"
+                      echo -e "`get_current_time` Mount disk:[\033[32m${SOURCE_DISK}\033[0m] -- \033[32mOK\033[0m"
+                    fi
+                  fi
+                else
+                  echo -e "`get_current_time` Disk:[\033[32m${SOURCE_DISK}\033[0m] has not mounted -- \033[36mWARING\033[0m"
+                fi
+              fi
+            fi
+          fi
+        fi
+        if [ "${TO_SET_DISK_IN_FSTAB}" == "true" ]; then
+          set_args_disk_in_fstab "${SOURCE_DISK}" "${MOUNT_DISK_PREFIX}/${DISK_NUMBER}" "${DISK_FILE_TYPE}"
+        fi
+        if [ "${IS_SETTED_DISK}" == "false" ] && [ "${IS_LVM_OR_SWAP_DIS}" == "false" ] && [ "${IS_NOT_SYSTEM_DISK}" -eq 0 ]; then
+          set_args_disk_in_fstab "${SOURCE_DISK}" "${MOUNT_DISK_PREFIX}/${DISK_NUMBER}" "${DISK_FILE_TYPE}"
+        fi
+      done
+      IFS="${OLD_IFS}"
+    fi
   fi
 }
 
@@ -417,6 +530,5 @@ function action() {
   record
   playback
   add_user
-	mount_disks
+  mount_disks
 }
-
