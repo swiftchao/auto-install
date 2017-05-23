@@ -5,7 +5,6 @@
 # Created Time: 2016-11-16 13:27:30
 #########################################################################
 #!/bin/bash
-set -e
 
 function convert_relative_path_to_absolute_path() {
   this="${0}"

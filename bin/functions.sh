@@ -5,7 +5,6 @@
 # Created Time: 2016-11-16 13:25:51
 #########################################################################
 #!/bin/bash
-set -e
 
 if [ "${DEBUG}" == "true" ]; then
   set -x
@@ -73,6 +72,18 @@ function check_args() {
       -d|-D|--disk|--Disk|--DISK)
         SOFT_DISK="true"
         shift
+        if [ -n "${1}" ]; then
+          ARGS_MOUNT_DISK_PREFIX="${1}"
+          shift
+        fi
+        if [ -n "${1}" ]; then
+          ARGS_DISK_FILE_TYPE="${1}"
+          shift
+        fi
+        if [ -n "${1}" ]; then
+          ARGS_FORMAT_UNMOUNT_DISK="${1}"
+          shift
+        fi
         ;;
       -a|-A|--all|--All|--ALL)
         SOFT_ALL="true"
@@ -130,8 +141,8 @@ function safe_remove() {
 
 function backup() {
   if [ -n "${1}" ] && [ -d "${1}" ] || [ -f "${1}" ]; then
-    safe_remove "${1}".back
-    cp -r "${1}" "${1}".back
+    safe_remove "${1}.back"
+    cp -r "${1}" "${1}.back"
   fi
 }
 
@@ -386,13 +397,26 @@ function get_setted_disks_in_fstab() {
   SETTED_DISKS_IN_FSTAB=`cat "${FSTAB_FILE}" | awk '{print$1}' | grep "^/" | xargs | sed 's| |,|g'`
 }
 
+function set_disk_default_value_in_args() {
+  if [ -n "${ARGS_MOUNT_DISK_PREFIX}" ]; then
+    MOUNT_DISK_PREFIX="${ARGS_MOUNT_DISK_PREFIX}"
+  fi
+  if [ -n "${ARGS_DISK_FILE_TYPE}" ]; then
+    DISK_FILE_TYPE="${ARGS_DISK_FILE_TYPE}"
+  fi
+  if [ -n "${ARGS_FORMAT_UNMOUNT_DISK}" ] && [ "${ARGS_FORMAT_UNMOUNT_DISK}" == "true" ]; then
+    FORMAT_UNMOUNT_DISK="true"
+  fi
+}
+
 function init_disks() {
   get_source_disks
   get_mounted_disks
   get_lvm_swap_disks  
-  get_max_disk_number
+  DISK_NUMBER=`get_max_disk_number`
   get_default_disk_value
   get_setted_disks_in_fstab
+  set_disk_default_value_in_args
 }
 
 function remove_tail_number() {
@@ -410,7 +434,7 @@ function is_args_disk_in_args_disks() {
           IS_ARGS_DISK_IN_ARGS_DISKS="true"
           break
         else 
-          TMP_DISK_NO_TAIL_NUMBER=`remove_tail_number "${1}"`
+          TMP_DISK_NO_TAIL_NUMBER=`remove_tail_number "${TMP_DISK}"`
           if [ "${1}" == "${TMP_DISK_NO_TAIL_NUMBER}" ]; then
             IS_ARGS_DISK_IN_ARGS_DISKS="true"
             break;
@@ -449,20 +473,23 @@ function get_max_disk_number() {
   if [ -n "${LAST_DISK_NUMBER}" ]; then
     MAX_DISK_NUMBER=${LAST_DISK_NUMBER}
   fi
+  echo "${MAX_DISK_NUMBER}"
 }
 
 function delete_old_args_disk_in_fstab() {
   if [ -n "${1}" ]; then
     init_fstab_file
-    cat "${FSTAB_FILE}" | grep -v "${1}" >tmpdisk && cat tmpdisk > "${FSTAB_FILE}"
+    cat "${FSTAB_FILE}" | grep -v "^${1}" >tmpfstab && cat tmpfstab > "${FSTAB_FILE}" && rm -rf tmpfstab
   fi
 }
 
 function set_args_disk_in_fstab() {
-  if [ -n "${1}" ] && [ -n "${2}" ] && [ -n "${3}" ]; then
+  if [ -n "${1}" ] && [ -n "${2}" ] && [ -n "${3}" ] && [ -n "${4}" ]; then
     init_fstab_file
-    backup "${FSTAB_FILE}" "${FSTAB_FILE}.back"
-    delete_old_args_disk_in_fstab
+    backup "${FSTAB_FILE}"
+    if [ "${4}" == "true" ]; then
+      delete_old_args_disk_in_fstab "${1}"
+    fi
     echo "${1}                    ${2}                   ${3}    defaults        0 0" >> ${FSTAB_FILE}
   fi
 }
@@ -482,24 +509,24 @@ function mount_disks() {
           IS_LVM_OR_SWAP_DISK=`is_lvm_or_swap_disk "${SOURCE_DISK}"`
           IS_NOT_SYSTEM_DISK=`is_not_system_disk "${SOURCE_DISK}"`
           IS_SETTED_DISK=`is_setted_disk "${SOURCE_DISK}"`
-          if [ "${IS_MOUNTED_DISK}" ]; then
+          if [ "${IS_MOUNTED_DISK}" == "true" ]; then
             echo -e "`get_current_time` Disk:[\033[32m${SOURCE_DISK}\033[0m] has already mounted -- \033[32mOK\033[0m"
           else
             if [ "${IS_LVM_OR_SWAP_DISK}" == "false" ] && [ "${IS_NOT_SYSTEM_DISK}" -eq 0 ]; then
               DISK_NUMBER=$((DISK_NUMBER+1))
-              create_dir "${MOUNT_DISK_PREFIX}/${DISK_NUMBER}"
-              mount "${SOURCE_DISK}" "${MOUNT_DISK_PREFIX}/${DISK_NUMBER}" > /dev/null 2>&1
+              create_dir "${MOUNT_DISK_PREFIX}${DISK_NUMBER}"
+              mount "${SOURCE_DISK}" "${MOUNT_DISK_PREFIX}${DISK_NUMBER}" > /dev/null 2>&1
               MOUNT_RESULT=$?
               if [ "${MOUNT_RESULT}" -eq 0 ]; then
                 TO_SET_DISK_IN_FSTAB="true"
                 echo -e "`get_current_time` Mount disk:[\033[32m${SOURCE_DISK}\033[0m] -- \033[32mOK\033[0m"
               else
                 if [ "${FORMAT_UNMOUNT_DISK}" == "true" ]; then
-                  echo y | mkfs -t "${DISK_FILE_TYPE}" -L "${MOUNT_DISK_PREFIX}/${DISK_NUMBER}" "${SOURCE_DISK}"
+                  echo y | mkfs -t "${DISK_FILE_TYPE}" -L "${MOUNT_DISK_PREFIX}${DISK_NUMBER}" "${SOURCE_DISK}"
                   FORMAT_DISK_RESULT=$?
                   if [ "${FORMAT_DISK_RESULT}" -eq 0 ]; then
                     echo -e "`get_current_time` Format disk:[\033[32m${SOURCE_DISK}\033[0m] -- \033[32mOK\033[0m"
-                    mount "${SOURCE_DISK}" "${MOUNT_DISK_PREFIX}/${DISK_NUMBER}" > /dev/null 2>&1
+                    mount "${SOURCE_DISK}" "${MOUNT_DISK_PREFIX}${DISK_NUMBER}" > /dev/null 2>&1
                     REMOUNT_DISK_RESULT=$?
                     if [ "${REMOUNT_RESULT}" -eq 0 ]; then
                       TO_SET_DISK_IN_FSTAB="true"
@@ -514,10 +541,7 @@ function mount_disks() {
           fi
         fi
         if [ "${TO_SET_DISK_IN_FSTAB}" == "true" ]; then
-          set_args_disk_in_fstab "${SOURCE_DISK}" "${MOUNT_DISK_PREFIX}/${DISK_NUMBER}" "${DISK_FILE_TYPE}"
-        fi
-        if [ "${IS_SETTED_DISK}" == "false" ] && [ "${IS_LVM_OR_SWAP_DIS}" == "false" ] && [ "${IS_NOT_SYSTEM_DISK}" -eq 0 ]; then
-          set_args_disk_in_fstab "${SOURCE_DISK}" "${MOUNT_DISK_PREFIX}/${DISK_NUMBER}" "${DISK_FILE_TYPE}"
+          set_args_disk_in_fstab "${SOURCE_DISK}" "${MOUNT_DISK_PREFIX}${DISK_NUMBER}" "${DISK_FILE_TYPE}" "${IS_SETTED_DISK}"
         fi
       done
       IFS="${OLD_IFS}"
