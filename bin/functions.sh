@@ -30,8 +30,7 @@ function convert_relative_path_to_absolute_path() {
 }
 
 function usage() {
- echo "Usage: ${this} [-r|--record] [-p|playback] [-u|--user] [-d|-disk] [-a|-all]
- " 
+ echo "Usage: ${this} [-r|--record] [-p|playback] [-u|--user] [-d|-disk] [-j|-jdk] [-a|-all]" 
 }
 
 function check_args() {
@@ -85,10 +84,15 @@ function check_args() {
           shift
         fi
         ;;
+      -j|-J|--jdk|--Jdk|--JDK)
+        SOFT_JDK="true"
+        shift
+        ;;
       -a|-A|--all|--All|--ALL)
         SOFT_ALL="true"
         SOFT_USER="true"
         SOFT_DISK="true"
+		SOFT_JDK="true"
         shift
         ;;
       *)
@@ -143,6 +147,58 @@ function backup() {
   if [ -n "${1}" ] && [ -d "${1}" ] || [ -f "${1}" ]; then
     safe_remove "${1}.back"
     cp -r "${1}" "${1}.back"
+  fi
+}
+
+function extract_args_tar_file() {
+  if [ -e "${1}" ] && [ -n "${2}" ] && [ -n "${3}" ]; then
+    tar -tvf "${1}" | grep "${3}" > /dev/null
+	i=$?
+	if [ "${i}" -eq 0 ]; then
+	  tar -xvf "${1}"-C "${2}" > /dev/null
+	else
+	  create_dir "${2}/${3}"
+	  tar -xvf "${1}" -C "${2}/${3}" > /dev/null
+	fi
+  fi
+}
+
+#replace old word to new word in file
+function replace_args_value_in_file() {
+  if [ -n "${1}" ] && [ -n "${2}" ] && [ -n "${3}" ] && [ -f "${3}" ]; then
+    /bin/sed -i "s/${1}/${2}/" "${3}"
+  fi
+}
+
+#replace old word with path symbol to new word in file
+function replace_args_value_with_path_symbol_in_file() {
+  if [ -n "${1}" ] && [ -n "${2}" ] && [ -n "${3}" ] && [ -f "${3}" ]; then
+    /bin/sed -i "s|${1}|${2}|" "${3}"
+  fi
+}
+
+#install soft by rpm file
+function install_rpm() {
+  RPM_PATH="${1}"
+  if [ -e "${RPM_PATH}" ];
+    if [ -e "${2}" ]; then
+	  /bin/rpm -ivh --prefix="${2}" "${RPM_PATH}"
+	else
+	  /bin/rpm -ivh "${RPM_PATH}"
+	fi
+  fi
+}
+
+#get line of the args context in args file
+function get_args_context_line_in_args_file() {
+  if [ -n "${1}" ] && [ -n "${2}" ] && [ -f "${2}" ]; then
+    /bin/grep -n "${1}" "${2}" | sed 's|:| |' | awk '{print$1}'
+  fi
+}
+
+function replace_all_line_with_path_symbol_in_file() {
+  if [ -n "${1}" ] && [ -n "${2}" ] && [ -n "${3}" ] && [ -f "${3}" ]; then
+    /bin/sed -i "${1}s|.*|${2}|" "${3}"
   fi
 }
 
@@ -549,10 +605,92 @@ function mount_disks() {
   fi
 }
 
+#############################################JDK ENTRANCE##################################
+#set JAVA_HOME and relevant varibribes in /etc/profile file
+function set_java_home() {
+  is_context_in_file "/etc/profile"
+  "JAVA_HOME" > /dev/null
+  IS_IN=$?
+  if [ -n "${1}" ]; then
+    java_home="${1}/${JAVA_VERSION}"
+	#backup /etc/profile
+	backup "/etc/profile"
+	if [ "${IS_IN}" -ne 0 ]; then
+	  #not exist
+	  echo "JAVA_HOME=${java_home}
+PATH=\$JAVA_HOME/bin:\$PATH
+CLASSPATH=.:\$JAVA_HOME/lib/tools.jar
+export JAVA_HOME
+export PATH
+export CLASSPATH" >> "/etc/profile"
+	else
+	  JAVA_HOME_LINE=`get_args_context_line_in_args_file ^JAVA_HOME "/etc/profile"`
+	  replace_all_line_with_path_symbol_in_file "${JAVA_HOME_LINE}" "JAVA_HOME=${1}/${JAVA_VERSION}" "/etc/profile"
+	  echo -e "`get_current_time` reset JAVA_HOME=${1}/${JAVA_VERSION}" >> "${LOG_INFO_FILE}"
+	fi
+	export JAVA_HOME="${1}/${JAVA_VERSION}"
+	load_args_file "/etc/profile"
+  fi
+}
+
+#extract args jdk tar file
+function extract_jdk_tar_file() {
+  if [ -n "${1}" ]; then
+    extract_args_tar_file "${SOFT_HOME}/thirdparty/software/jdk/${JDK_VERSION}" "${1}" "${JAVA_VERSION}"
+  fi
+}
+
+function install_jdk_rpm() {
+  if [ -n "${1}" ]; then
+    install_rpm "${SOFT_HOME}/thirdparty/software/jdk/${JDK_VERSION}" "${1}" >> "${LOG_INFO_FILE}" 2>&1
+  fi
+}
+
+function install_jdk() {
+  if [ "${SOFT_JDK}" == "true" ]; then
+    if [ -z "${JAVA_INSTALL_DIR}" ]; then
+	  JAVA_INSTALL_DIR="/usr/java"
+	fi
+	create_dir "${JAVA_INSTALL_DIR}"
+	#set JAVA_HOME
+	set_java_home "${JAVA_INSTALL_DIR}"
+	SET_JAVA_HOME_RESULT=$?
+	if [ "${SET_JAVA_HOME_RESULT}" -eq 0 ]; then
+	  echo -e "`get_current_time` set JAVA_HOME=${1}/${JAVA_VERSION} \033[32m OK \033[0m"
+	  echo -e "`get_current_time` set JAVA_HOME=${1}/${JAVA_VERSION} \033[32m OK \033[0m" >> "${LOG_INFO_FILE}"
+	else
+	  echo -e "`get_current_time` set JAVA_HOME=${1}/${JAVA_VERSION} \033[31m FAILED \033[0m"
+	  echo -e "`get_current_time` set JAVA_HOME=${1}/${JAVA_VERSION} \033[31m FAILED \033[0m" >> "${LOG_ERROR_FILE}"
+	fi
+	#install jdk
+	echo "${JDK_VERSION}" | grep "rpm$" > /dev/null
+	IS_RPM=$?
+	if [ "${IS_RPM}" -eq 0 ]; then
+	  JDK_VERSION_NUMBER=`echo "${JAVA_VERSION}" | /bin/sed 's/^jdk//'`
+	  /bin/rpm -qa | grep jdk | grep "${JDK_VERSION_NUMBER}" > /dev/null 2>&1
+	  IS_RPM_INSTALLED=$?
+	  if [ "${IS_RPM_INSTALLED}" ]; then
+	    install_jdk_rpm "${JAVA_INSTALL_DIR}"
+	  else
+	    extract_jdk_tar_file "${JAVA_INSTALL_DIR}"
+	  fi
+	  INSTALL_JAVA_RESULT=$?
+	  if [ "${INSTALL_JAVA_RESULT}" -eq 0 ]; then
+	    echo -e "`get_current_time` install jdk ${JDK_VERSION} \033[32m OK \033[0m"
+	    echo -e "`get_current_time` install jdk ${JDK_VERSION} \033[32m OK \033[0m" >> "${LOG_INFO_FILE}"
+	  else 
+	    echo -e "`get_current_time` install jdk ${JDK_VERSION} \033[31m FAILED \033[0m"
+	    echo -e "`get_current_time` install jdk ${JDK_VERSION} \033[31m FAILED \033[0m" >> "${LOG_ERROR_FILE}"
+	  fi
+	fi
+  fi
+}
+
 #############################################MAIN ENTRANCE##################################
 function action() {
   record
   playback
   add_user
   mount_disks
+  install_jdk
 }
