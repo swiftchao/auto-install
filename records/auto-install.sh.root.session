@@ -1,0 +1,84 @@
+Script started on 2017年08月08日 星期二 05时09分49秒
+]0;root@code:/home/code/shell/auto-install/bin[?1034h[root@code bin]# ls
+[0m[01;32mauto-install.sh[0m  [01;32mfunctions.sh[0m  [01;32mreplace_tab_to_2_space.sh[0m
+[m]0;root@code:/home/code/shell/auto-install/bin[root@code bin]# ./auto-install.sh 
+Usage: /home/code/shell/auto-install/bin/auto-install.sh [-r|--record] [-p|playback] [-u|--user] [-d|-disk] [-j|-jdk] [-a|-all]
+Examples:
+/home/code/shell/auto-install/bin/auto-install.sh -r        # Record operators
+/home/code/shell/auto-install/bin/auto-install.sh -p        # Playback record operators
+/home/code/shell/auto-install/bin/auto-install.sh -u        # Add user
+/home/code/shell/auto-install/bin/auto-install.sh -d        # Mount umounted disks
+/home/code/shell/auto-install/bin/auto-install.sh -j        # Install jdk
+/home/code/shell/auto-install/bin/auto-install.sh -a        # Install all softs and set all files
+ 
+]0;root@code:/home/code/shell/auto-install/bin[root@code bin]# ./replace_tab_to_2_space.sh [K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[Kauto-install.sh -u[Kd
+df: "/mnt/hgfs": 没有那个文件或目录
+df: "/mnt/hgfs": 没有那个文件或目录
+2017-08-08 05:10:18 Disk:[[32m/dev/sda[0m] has already mounted -- [32mOK[0m
+2017-08-08 05:10:18 Mount disk:[[32m/dev/sdb[0m] -- [32mOK[0m
+2017-08-08 05:10:18 Mount disk:[[32m/dev/sdc[0m] -- [32mOK[0m
+2017-08-08 05:10:19 Mount disk:[[32m/dev/sdd[0m] -- [32mOK[0m
+2017-08-08 05:10:19 Disk:[[32m/dev/mapper/vg_code-lv_root[0m] has already mounted -- [32mOK[0m
+2017-08-08 05:10:19 Total taken:[2] seconds.
+]0;root@code:/home/code/shell/auto-install/bin[root@code bin]# ./auto-install.sh -j
+2017-08-08 05:10:34 set JAVA_HOME=/jdk1.7.0_45 -- [32mOK[0m
+2017-08-08 05:10:35 jdk-7u45-linux-x64.rpm has already installed -- [36mWARING[0m
+2017-08-08 05:10:35 install jdk jdk-7u45-linux-x64.rpm -- [32mOK[0m
+2017-08-08 05:10:35 Total taken:[2] seconds.
+]0;root@code:/home/code/shell/auto-install/bin[root@code bin]# ./auto-install.sh -u
+2017-08-08 05:10:43 User 'auto-install.sh' has already added
+2017-08-08 05:10:44 Change user 'auto-install.sh' password -- [32mOK[0m
+2017-08-08 05:10:44 Total taken:[1] seconds.
+]0;root@code:/home/code/shell/auto-install/bin[root@code bin]# ./auto-install.sh -a
+2017-08-08 05:10:53 User 'auto-install.sh' has already added
+2017-08-08 05:10:53 Change user 'auto-install.sh' password -- [32mOK[0m
+df: "/mnt/hgfs": 没有那个文件或目录
+df: "/mnt/hgfs": 没有那个文件或目录
+2017-08-08 05:10:53 Disk:[[32m/dev/sda[0m] has already mounted -- [32mOK[0m
+2017-08-08 05:10:54 Disk:[[32m/dev/sdb[0m] has already mounted -- [32mOK[0m
+2017-08-08 05:10:54 Disk:[[32m/dev/sdc[0m] has already mounted -- [32mOK[0m
+2017-08-08 05:10:54 Disk:[[32m/dev/sdd[0m] has already mounted -- [32mOK[0m
+2017-08-08 05:10:54 Disk:[[32m/dev/mapper/vg_code-lv_root[0m] has already mounted -- [32mOK[0m
+2017-08-08 05:10:55 set JAVA_HOME=/jdk1.7.0_45 -- [32mOK[0m
+2017-08-08 05:10:56 jdk-7u45-linux-x64.rpm has already installed -- [36mWARING[0m
+2017-08-08 05:10:56 install jdk jdk-7u45-linux-x64.rpm -- [32mOK[0m
+2017-08-08 05:10:56 Total taken:[3] seconds.
+]0;root@code:/home/code/shell/auto-install/binYou have new mail in /var/spool/mail/root
+[root@code bin]# ll ../logs/
+总用量 16
+-rw-r--r--. 1 root root    0 8月   8 05:03 auto-install.sh.root.2017-08-08.ERROR
+-rw-r--r--. 1 root root 1182 8月   8 05:10 auto-install.sh.root.2017-08-08.INFO
+-rw-r--r--. 1 root root    0 8月   8 05:03 auto-install.sh.root.2017-08-08.WARING
+lrwxrwxrwx. 1 root root   72 8月   8 05:10 [0m[01;36mauto-install.sh.root.ERROR[0m -> /home/code/shell/auto-install/logs/auto-install.sh.root.2017-08-08.ERROR
+lrwxrwxrwx. 1 root root   71 8月   8 05:10 [01;36mauto-install.sh.root.INFO[0m -> /home/code/shell/auto-install/logs/auto-install.sh.root.2017-08-08.INFO
+lrwxrwxrwx. 1 root root   73 8月   8 05:10 [01;36mauto-install.sh.root.WARING[0m -> /home/code/shell/auto-install/logs/auto-install.sh.root.2017-08-08.WARING
+[m]0;root@code:/home/code/shell/auto-install/bin[root@code bin]# vim ../logs/auto-install.sh.root.INFO 
+[?1049h[?1h=[1;34r[?12;25h[?12l[?25h[27m[m[H[2J[?25l[33;1H"../logs/auto-install.sh.root.INFO" 25L, 1182C[>c[1;1H[1m[4m[33m  1 [m[4m2017-08-08 05:03:45 Begin auto install...                                                                                                                       [m[2;1H[1m[33m  2 [m2017-08-08 05:03:45 reset JAVA_HOME=/usr/java/jdk1.7.0_45
+[1m[33m  3 [m2017-08-08 05:03:46 set JAVA_HOME=/jdk1.7.0_45 -- [1m[34m^[[m[32mOK[1m[34m^[[m[0m
+[1m[33m  4 [m2017-08-08 05:03:48 install jdk jdk-7u45-linux-x64.rpm -- [1m[34m^[[m[32mOK[1m[34m^[[m[0m else
+[1m[33m  5 [m2017-08-08 05:03:48 Total taken:[3] seconds.
+[1m[33m  6 [m2017-08-08 05:03:48 End
+[1m[33m  7 [m2017-08-08 05:09:49 Begin auto install...
+[1m[33m  8 [m2017-08-08 05:10:17 Begin auto install...
+[1m[33m  9 [m2017-08-08 05:10:19 Total taken:[2] seconds.
+[1m[33m 10 [m2017-08-08 05:10:19 End
+[1m[33m 11 [m2017-08-08 05:10:33 Begin auto install...
+[1m[33m 12 [m2017-08-08 05:10:33 reset JAVA_HOME=/usr/java/jdk1.7.0_45
+[1m[33m 13 [m2017-08-08 05:10:34 set JAVA_HOME=/jdk1.7.0_45 -- [1m[34m^[[m[32mOK[1m[34m^[[m[0m
+[1m[33m 14 [m2017-08-08 05:10:35 install jdk jdk-7u45-linux-x64.rpm -- [1m[34m^[[m[32mOK[1m[34m^[[m[0m else
+[1m[33m 15 [m2017-08-08 05:10:35 Total taken:[2] seconds.
+[1m[33m 16 [m2017-08-08 05:10:35 End
+[1m[33m 17 [m2017-08-08 05:10:43 Begin auto install...
+[1m[33m 18 [m2017-08-08 05:10:44 Total taken:[1] seconds.
+[1m[33m 19 [m2017-08-08 05:10:44 End
+[1m[33m 20 [m2017-08-08 05:10:53 Begin auto install...
+[1m[33m 21 [m2017-08-08 05:10:54 reset JAVA_HOME=/usr/java/jdk1.7.0_45
+[1m[33m 22 [m2017-08-08 05:10:55 set JAVA_HOME=/jdk1.7.0_45 -- [1m[34m^[[m[32mOK[1m[34m^[[m[0m
+[1m[33m 23 [m2017-08-08 05:10:56 install jdk jdk-7u45-linux-x64.rpm -- [1m[34m^[[m[32mOK[1m[34m^[[m[0m else
+[1m[33m 24 [m2017-08-08 05:10:56 Total taken:[3] seconds.
+[1m[33m 25 [m2017-08-08 05:10:56 End
+[1m[34m~                                                                                                                                                                   [27;1H~                                                                                                                                                                   [28;1H~                                                                                                                                                                   [29;1H~                                                                                                                                                                   [30;1H~                                                                                                                                                                   [31;1H~                                                                                                                                                                   [m[32;1H[1m[7m/home/code/shell/auto-install/logs/auto-install.sh.root.INFO [FORMAT=unix] [TYPE=TXT] [POS=1,1][4%] 08/08/17 - 05:11                                                [1;5H[?12l[?25h[?25l[m[1m[33m  1 [m2017-08-08 05:03:45 Begin auto install...[1;46H[K[25;1H[1m[4m[33m 25 [m[4m2017-08-08 05:10:56 End                                                                                                                                         [m[32;92H[1m[7m25,1][100%] 08/08/17 - 05:11[25;5H[?12l[?25h[?25l[m[24;1H[1m[4m[33m 24 [m[4m2017-08-08 05:10:56 Total taken:[3] seconds.                                                                                                                    [m[25;1H[1m[33m 25 [m2017-08-08 05:10:56 End[25;28H[K[32;93H[1m[7m4,1][96%] 08/08/17 - 05:11  [24;5H[?12l[?25h[?25l[m[23;1H[1m[4m[33m 23 [m[4m2017-08-08 05:10:56 install jdk jdk-7u45-linux-x64.rpm -- ^[[32mOK^[[0m else                                                                                    [m[24;1H[1m[33m 24 [m2017-08-08 05:10:56 Total taken:[3] seconds.[24;49H[K[32;93H[1m[7m3,1][92%[23;5H[?12l[?25h[?25l[m[22;1H[1m[4m[33m 22 [m[4m2017-08-08 05:10:55 set JAVA_HOME=/jdk1.7.0_45 -- ^[[32mOK^[[0m                                                                                                 [m[23;1H[1m[33m 23 [m2017-08-08 05:10:56 install jdk jdk-7u45-linux-x64.rpm -- [1m[34m^[[m[32mOK[1m[34m^[[m[0m else[23;81H[K[32;93H[1m[7m2,1][88%[22;5H[?12l[?25h[?25l[m[21;1H[1m[4m[33m 21 [m[4m2017-08-08 05:10:54 reset JAVA_HOME=/usr/java/jdk1.7.0_45                                                                                                       [m[22;1H[1m[33m 22 [m2017-08-08 05:10:55 set JAVA_HOME=/jdk1.7.0_45 -- [1m[34m^[[m[32mOK[1m[34m^[[m[0m[22;68H[K[32;93H[1m[7m1,1][84%[21;5H[?12l[?25h[?25l[m[20;1H[1m[4m[33m 20 [m[4m2017-08-08 05:10:53 Begin auto install...                                                                                                                       [m[21;1H[1m[33m 21 [m2017-08-08 05:10:54 reset JAVA_HOME=/usr/java/jdk1.7.0_45[21;62H[K[32;93H[1m[7m0,1][80%[20;5H[?12l[?25h[?25l[m[19;1H[1m[4m[33m 19 [m[4m2017-08-08 05:10:44 End                                                                                                                                         [m[20;1H[1m[33m 20 [m2017-08-08 05:10:53 Begin auto install...[20;46H[K[32;92H[1m[7m19,1][76%[19;5H[?12l[?25h[?25l[m[18;1H[1m[4m[33m 18 [m[4m2017-08-08 05:10:44 Total taken:[1] seconds.                                                                                                                    [m[19;1H[1m[33m 19 [m2017-08-08 05:10:44 End[19;28H[K[32;93H[1m[7m8,1][72%[18;5H[?12l[?25h[?25l[m[17;1H[1m[4m[33m 17 [m[4m2017-08-08 05:10:43 Begin auto install...                                                                                                                       [m[18;1H[1m[33m 18 [m2017-08-08 05:10:44 Total taken:[1] seconds.[18;49H[K[32;93H[1m[7m7,1][68%[17;5H[?12l[?25h[?25l[m[16;1H[1m[4m[33m 16 [m[4m2017-08-08 05:10:35 End                                                                                                                                         [m[17;1H[1m[33m 17 [m2017-08-08 05:10:43 Begin auto install...[17;46H[K[32;93H[1m[7m6,1][64%[16;5H[?12l[?25h[?25l[m[15;1H[1m[4m[33m 15 [m[4m2017-08-08 05:10:35 Total taken:[2] seconds.                                                                                                                    [m[16;1H[1m[33m 16 [m2017-08-08 05:10:35 End[16;28H[K[32;93H[1m[7m5,1][60%[15;5H[?12l[?25h[?25l[m[14;1H[1m[4m[33m 14 [m[4m2017-08-08 05:10:35 install jdk jdk-7u45-linux-x64.rpm -- ^[[32mOK^[[0m else                                                                                    [m[15;1H[1m[33m 15 [m2017-08-08 05:10:35 Total taken:[2] seconds.[15;49H[K[32;93H[1m[7m4,1][56%[14;5H[?12l[?25h[?25l[m[13;1H[1m[4m[33m 13 [m[4m2017-08-08 05:10:34 set JAVA_HOME=/jdk1.7.0_45 -- ^[[32mOK^[[0m                                                                                                 [m[14;1H[1m[33m 14 [m2017-08-08 05:10:35 install jdk jdk-7u45-linux-x64.rpm -- [1m[34m^[[m[32mOK[1m[34m^[[m[0m else[14;81H[K[32;93H[1m[7m3,1][52%[13;5H[?12l[?25h[?25l[m[12;1H[1m[4m[33m 12 [m[4m2017-08-08 05:10:33 reset JAVA_HOME=/usr/java/jdk1.7.0_45                                                                                                       [m[13;1H[1m[33m 13 [m2017-08-08 05:10:34 set JAVA_HOME=/jdk1.7.0_45 -- [1m[34m^[[m[32mOK[1m[34m^[[m[0m[13;68H[K[32;93H[1m[7m2,1][48%[12;5H[?12l[?25h[?25l[m[11;1H[1m[4m[33m 11 [m[4m2017-08-08 05:10:33 Begin auto install...                                                                                                                       [m[12;1H[1m[33m 12 [m2017-08-08 05:10:33 reset JAVA_HOME=/usr/java/jdk1.7.0_45[12;62H[K[32;93H[1m[7m1,1][44%[11;5H[?12l[?25h[?25l[m[10;1H[1m[4m[33m 10 [m[4m2017-08-08 05:10:19 End                                                                                                                                         [m[11;1H[1m[33m 11 [m2017-08-08 05:10:33 Begin auto install...[11;46H[K[32;93H[1m[7m0,1][40%[10;5H[?12l[?25h[?25l[m[9;1H[1m[4m[33m  9 [m[4m2017-08-08 05:10:19 Total taken:[2] seconds.                                                                                                                    [m[10;1H[1m[33m 10 [m2017-08-08 05:10:19 End[10;28H[K[32;92H[1m[7m9,1][36%] 08/08/17 - 05:11  [9;5H[?12l[?25h[?25l[m[8;1H[1m[4m[33m  8 [m[4m2017-08-08 05:10:17 Begin auto install...                                                                                                                       [m[9;1H[1m[33m  9 [m2017-08-08 05:10:19 Total taken:[2] seconds.[9;49H[K[32;92H[1m[7m8,1][32%[8;5H[?12l[?25h[?25l[m[7;1H[1m[4m[33m  7 [m[4m2017-08-08 05:09:49 Begin auto install...                                                                                                                       [m[8;1H[1m[33m  8 [m2017-08-08 05:10:17 Begin auto install...[8;46H[K[32;92H[1m[7m7,1][28%[7;5H[?12l[?25h[?25l[m[6;1H[1m[4m[33m  6 [m[4m2017-08-08 05:03:48 End                                                                                                                                         [m[7;1H[1m[33m  7 [m2017-08-08 05:09:49 Begin auto install...[7;46H[K[32;92H[1m[7m6,1][24%[6;5H[?12l[?25h[?25l[m[5;1H[1m[4m[33m  5 [m[4m2017-08-08 05:03:48 Total taken:[3] seconds.                                                                                                                    [m[6;1H[1m[33m  6 [m2017-08-08 05:03:48 End[6;28H[K[32;92H[1m[7m5,1][20%[5;5H[?12l[?25h[?25l[m[4;1H[1m[4m[33m  4 [m[4m2017-08-08 05:03:48 install jdk jdk-7u45-linux-x64.rpm -- ^[[32mOK^[[0m else                                                                                    [m[5;1H[1m[33m  5 [m2017-08-08 05:03:48 Total taken:[3] seconds.[5;49H[K[32;92H[1m[7m4,1][16%[4;5H[?12l[?25h[?25l[m[3;1H[1m[4m[33m  3 [m[4m2017-08-08 05:03:46 set JAVA_HOME=/jdk1.7.0_45 -- ^[[32mOK^[[0m                                                                                                 [m[4;1H[1m[33m  4 [m2017-08-08 05:03:48 install jdk jdk-7u45-linux-x64.rpm -- [1m[34m^[[m[32mOK[1m[34m^[[m[0m else[4;81H[K[32;92H[1m[7m3,1][12%[3;5H[?12l[?25h[?25l[m[2;1H[1m[4m[33m  2 [m[4m2017-08-08 05:03:45 reset JAVA_HOME=/usr/java/jdk1.7.0_45                                                                                                       [m[3;1H[1m[33m  3 [m2017-08-08 05:03:46 set JAVA_HOME=/jdk1.7.0_45 -- [1m[34m^[[m[32mOK[1m[34m^[[m[0m[3;68H[K[32;92H[1m[7m2,1][8%] 08/08/17 - 05:11  [2;5H[?12l[?25h[?25l[m[1;1H[1m[4m[33m  1 [m[4m2017-08-08 05:03:45 Begin auto install...                                                                                                                       [m[2;1H[1m[33m  2 [m2017-08-08 05:03:45 reset JAVA_HOME=/usr/java/jdk1.7.0_45[2;62H[K[32;92H[1m[7m1,1][4%[1;5H[?12l[?25h[?25l[m[33;1H[K[33;1H:[?12l[?25hq[?25l[?12l[?25h[?25l
+[33;1H[K[34;1H[?1l>[?12l[?25h[?1049l]0;root@code:/home/code/shell/auto-install/bin[root@code bin]# exit
+exit
+
+Script done on 2017年08月08日 星期二 05时11分27秒

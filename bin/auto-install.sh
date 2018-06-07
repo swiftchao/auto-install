@@ -34,7 +34,7 @@ function load_args_file() {
 convert_relative_path_to_absolute_path
 get_soft_home
 
-load_args_file "${SOFT_HOME}/conf/config.conf"
+load_args_file "${SOFT_HOME}/conf/config.cfg"
 load_args_file "${SOFT_HOME}/bin/functions.sh"
 
 check_args $*

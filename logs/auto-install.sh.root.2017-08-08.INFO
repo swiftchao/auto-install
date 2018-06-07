@@ -1,0 +1,28 @@
+2017-08-08 05:03:45 Begin auto install...
+2017-08-08 05:03:45 reset JAVA_HOME=/usr/java/jdk1.7.0_45
+2017-08-08 05:03:46 set JAVA_HOME=/jdk1.7.0_45 -- [32mOK[0m
+2017-08-08 05:03:48 install jdk jdk-7u45-linux-x64.rpm -- [32mOK[0m else
+2017-08-08 05:03:48 Total taken:[3] seconds.
+2017-08-08 05:03:48 End
+2017-08-08 05:09:49 Begin auto install...
+2017-08-08 05:10:17 Begin auto install...
+2017-08-08 05:10:19 Total taken:[2] seconds.
+2017-08-08 05:10:19 End
+2017-08-08 05:10:33 Begin auto install...
+2017-08-08 05:10:33 reset JAVA_HOME=/usr/java/jdk1.7.0_45
+2017-08-08 05:10:34 set JAVA_HOME=/jdk1.7.0_45 -- [32mOK[0m
+2017-08-08 05:10:35 install jdk jdk-7u45-linux-x64.rpm -- [32mOK[0m else
+2017-08-08 05:10:35 Total taken:[2] seconds.
+2017-08-08 05:10:35 End
+2017-08-08 05:10:43 Begin auto install...
+2017-08-08 05:10:44 Total taken:[1] seconds.
+2017-08-08 05:10:44 End
+2017-08-08 05:10:53 Begin auto install...
+2017-08-08 05:10:54 reset JAVA_HOME=/usr/java/jdk1.7.0_45
+2017-08-08 05:10:55 set JAVA_HOME=/jdk1.7.0_45 -- [32mOK[0m
+2017-08-08 05:10:56 install jdk jdk-7u45-linux-x64.rpm -- [32mOK[0m else
+2017-08-08 05:10:56 Total taken:[3] seconds.
+2017-08-08 05:10:56 End
+2017-08-08 05:11:27 Total taken:[98] seconds.
+2017-08-08 05:11:27 End
+2017-08-08 05:11:36 Begin auto install...
