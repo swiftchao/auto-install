@@ -1,4 +1,4 @@
-#auto-install
+# auto-install
 * auto install and set properties for soft
 * add user and set user home
 * record operators
