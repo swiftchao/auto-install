@@ -1,0 +1,1 @@
+LINE=$(grep -n -A 6 'genericswitch:7c1c-f1f3-6ca1' ml2_conf_genericswitch.ini | grep -m1 password | awk -F '-' '{print $1}'); if [ -n "$LINE" ]; then sed -i "${LINE}s/.*/password = 555555/" ml2_conf_genericswitch.ini; else echo "password = 333333"  >> ml2_conf_genericswitch.ini; fi
